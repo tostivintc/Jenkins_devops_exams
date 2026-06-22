@@ -7,48 +7,52 @@ pipeline {
   }
   agent any // Jenkins will be able to select all available agents
   stages {
-    parallel {
-      stage('Docker Build cast service'){ // docker build image stage
-        steps {
-          script {
-          sh '''
-            docker rm -f cast-service
-            docker build -t $DOCKER_ID/$DOCKER_CAST_IMAGE:$DOCKER_TAG cast-service --name cast-service
-            sleep 6
-          '''
+    stage('Docker Build'){
+      parallel {
+        stage('Docker Build cast service'){
+          steps {
+            script {
+            sh '''
+              docker rm -f cast-service
+              docker build -t $DOCKER_ID/$DOCKER_CAST_IMAGE:$DOCKER_TAG cast-service --name cast-service
+              sleep 6
+            '''
+            }
           }
         }
-      }
-      stage('Docker Build movie service'){ // docker build image stage
-        steps {
-          script {
-          sh '''
-            docker rm -f movie-service
-            docker build -t $DOCKER_ID/$DOCKER_MOVIE_IMAGE:$DOCKER_TAG movie-service --name movie-service
-            sleep 6
-          '''
+        stage('Docker Build movie service'){
+          steps {
+            script {
+            sh '''
+              docker rm -f movie-service
+              docker build -t $DOCKER_ID/$DOCKER_MOVIE_IMAGE:$DOCKER_TAG movie-service --name movie-service
+              sleep 6
+            '''
+            }
           }
         }
       }
     }
-    parallel {
-      stage('Docker run cast-service'){ // run container from our builded image
-        steps {
-          script {
-          sh '''
-            docker run -d -p 8002:8000 --name cast-service $DOCKER_ID/$DOCKER_IMAGE:$DOCKER_TAG
-            sleep 10
-          '''
+    stage('Docker Run'){
+      parallel {
+        stage('Docker run cast-service'){
+          steps {
+            script {
+            sh '''
+              docker run -d -p 8002:8000 --name cast-service $DOCKER_ID/$DOCKER_IMAGE:$DOCKER_TAG
+              sleep 10
+            '''
+            }
           }
         }
-      }
-      stage('Docker run movie-service'){ // run container from our builded image
-        steps {
-          script {
-          sh '''
-            docker run -d -p 8001:8000 --name movie-service $DOCKER_ID/$DOCKER_IMAGE:$DOCKER_TAG
-            sleep 10
-          '''
+        stage('Docker run movie-service'){
+          steps {
+            script {
+            sh '''
+              docker run -d -p 8001:8000 --name movie-service $DOCKER_ID/$DOCKER_IMAGE:$DOCKER_TAG
+              sleep 10
+            '''
+            }
           }
         }
       }
