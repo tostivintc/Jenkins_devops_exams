@@ -14,7 +14,7 @@ pipeline {
             script {
             sh '''
               docker rm -f cast-service
-              docker build -t $DOCKER_ID/$DOCKER_CAST_IMAGE:$DOCKER_TAG cast-service --name cast-service
+              docker build -t $DOCKER_ID/$DOCKER_CAST_IMAGE:$DOCKER_TAG cast-service
               sleep 6
             '''
             }
@@ -25,7 +25,7 @@ pipeline {
             script {
             sh '''
               docker rm -f movie-service
-              docker build -t $DOCKER_ID/$DOCKER_MOVIE_IMAGE:$DOCKER_TAG movie-service --name movie-service
+              docker build -t $DOCKER_ID/$DOCKER_MOVIE_IMAGE:$DOCKER_TAG movie-service
               sleep 6
             '''
             }
