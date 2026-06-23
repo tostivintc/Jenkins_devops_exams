@@ -9,7 +9,7 @@ pipeline {
   stages {
     stage('Docker Build'){
       parallel {
-        stage('Docker Build cast service'){
+        stage('Cast service'){
           steps {
             script {
             sh '''
@@ -20,7 +20,7 @@ pipeline {
             }
           }
         }
-        stage('Docker Build movie service'){
+        stage('Movie service'){
           steps {
             script {
             sh '''
@@ -35,7 +35,7 @@ pipeline {
     }
     stage('Docker Run'){
       parallel {
-        stage('Docker run cast-service'){
+        stage('Cast service'){
           steps {
             script {
             sh '''
@@ -45,7 +45,7 @@ pipeline {
             }
           }
         }
-        stage('Docker run movie-service'){
+        stage('Movie service'){
           steps {
             script {
             sh '''
@@ -71,51 +71,65 @@ pipeline {
         }
       }
     }
-    stage('Deploy dev') {
-      environment {
-        KUBECONFIG = credentials("config") // we retrieve  kubeconfig from secret file called config saved on jenkins
-      }
-      steps {
-        script {
-          sh '''
-            rm -Rf .kube
-            mkdir .kube
-            ls
-            cat $KUBECONFIG > .kube/config
-            cp fastapi/values.yaml values.yml
-            sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
-            cat values.yml
-            helm upgrade --install app fastapi --values=values.yml --namespace dev
-            PORT=$(kubectl get --namespace dev -o jsonpath="{.spec.ports[0].nodePort}" services app-fastapi)
-            echo "Dev env available at http://0.0.0.0:$PORT"
-          '''
+    stage('Deploy') {
+      parallel {
+        stage('Deploy dev') {
+          environment {
+            KUBECONFIG = credentials("config")
+            PORT=31000
+          }
+          steps {
+            script {
+              sh '''
+                rm -Rf .kube
+                mkdir .kube
+                cat $KUBECONFIG > .kube/config
+                helm upgrade --install app charts --namespace dev --set service.nodePort=$PORT --set image.tag="${DOCKER_TAG}"
+                echo "Dev env available at http://0.0.0.0:$PORT"
+              '''
+            }
+          }
         }
-      }
-    }
-    stage('Deploy staging'){
-      environment {
-        KUBECONFIG = credentials("config") // we retrieve  kubeconfig from secret file called config saved on jenkins
-      }
-      steps {
-        script {
-          sh '''
-            rm -Rf .kube
-            mkdir .kube
-            ls
-            cat $KUBECONFIG > .kube/config
-            cp fastapi/values.yaml values.yml
-            sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
-            cat values.yml
-            helm upgrade --install app fastapi --values=values.yml --namespace staging
-            PORT=$(kubectl get --namespace staging -o jsonpath="{.spec.ports[0].nodePort}" services app-fastapi)
-            echo "Staging env available at http://0.0.0.0:$PORT"
-          '''
+        stage('Deploy staging'){
+          environment {
+            KUBECONFIG = credentials("config")
+            PORT=31001
+          }
+          steps {
+            script {
+              sh '''
+                rm -Rf .kube
+                mkdir .kube
+                cat $KUBECONFIG > .kube/config
+                helm upgrade --install app charts --namespace staging --set service.nodePort=$PORT --set image.tag="${DOCKER_TAG}"
+                echo "Staging env available at http://0.0.0.0:$PORT"
+              '''
+            }
+          }
+        }
+        stage('Deploy QA'){
+          environment {
+            KUBECONFIG = credentials("config")
+            PORT=31002
+          }
+          steps {
+            script {
+              sh '''
+                rm -Rf .kube
+                mkdir .kube
+                cat $KUBECONFIG > .kube/config
+                helm upgrade --install app charts --namespace qa --set service.nodePort=$PORT --set image.tag="${DOCKER_TAG}""
+                echo "QA env available at http://0.0.0.0:$PORT"
+              '''
+            }
+          }
         }
       }
     }
     stage('Deploy prod'){
       environment {
-        KUBECONFIG = credentials("config") // we retrieve  kubeconfig from secret file called config saved on jenkins
+        KUBECONFIG = credentials("config")
+        PORT=31003
       }
       steps {
         // Create an Approval Button with a timeout of 15minutes.
@@ -127,13 +141,8 @@ pipeline {
           sh '''
             rm -Rf .kube
             mkdir .kube
-            ls
             cat $KUBECONFIG > .kube/config
-            cp fastapi/values.yaml values.yml
-            sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
-            cat values.yml
-            helm upgrade --install app fastapi --values=values.yml --namespace prod
-            PORT=$(kubectl get --namespace prod -o jsonpath="{.spec.ports[0].nodePort}" services app-fastapi)
+                helm upgrade --install app charts --namespace prod --set service.nodePort=$PORT --set image.tag="${DOCKER_TAG}""
             echo "Prod env available at http://0.0.0.0:$PORT"
           '''
         }
