@@ -118,7 +118,7 @@ pipeline {
                 rm -Rf .kube
                 mkdir .kube
                 cat $KUBECONFIG > .kube/config
-                helm upgrade --install app charts --namespace qa --set service.nodePort=$PORT --set image.tag="${DOCKER_TAG}""
+                helm upgrade --install app charts --namespace qa --set service.nodePort=$PORT --set image.tag="${DOCKER_TAG}"
                 echo "QA env available at http://0.0.0.0:$PORT"
               '''
             }
