@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-#BASE_URL="http://localhost:8002"
 BASE_URL=$1
 
 CAST_RSP=$(curl -s -X 'POST' \
