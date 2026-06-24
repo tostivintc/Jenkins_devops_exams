@@ -13,7 +13,7 @@ pipeline {
         sh '''
           docker compose up -d
           sleep 6
-          test-smoke.sh http://localhost:8080
+          ./test-smoke.sh http://localhost:8080
         '''
         }
       }
