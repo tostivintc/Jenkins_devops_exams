@@ -7,6 +7,17 @@ pipeline {
   }
   agent any // Jenkins will be able to select all available agents
   stages {
+    stage('Test with Docker compose'){
+      steps {
+        script {
+        sh '''
+          docker compose up -d
+          sleep 6
+          test-smoke.sh http://localhost:8080
+        '''
+        }
+      }
+    }
     stage('Docker Build'){
       parallel {
         stage('Cast service'){
