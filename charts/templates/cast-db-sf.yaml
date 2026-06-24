@@ -18,9 +18,9 @@ spec:
           image: postgres:12.1-alpine
           env:
             - name: "POSTGRES_USER"
-              value: "movie_db_username"
+              value: "cast_db_username"
             - name: "POSTGRES_DB"
-              value: "movie_db_dev"
+              value: "cast_db_dev"
           envFrom:
             - secretRef:
                 name: cast-db-secret
