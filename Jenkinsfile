@@ -96,7 +96,10 @@ pipeline {
                 mkdir .kube
                 cat $KUBECONFIG > .kube/config
                 helm upgrade --install app charts --namespace dev --set service.nodePort=$PORT --set image.tag="${DOCKER_TAG}"
-                echo "Dev env available at http://0.0.0.0:$PORT"
+                URL="http://$(curl -s ifconfig.me):$PORT"
+                echo "Dev env available at $URL, see"
+                echo "$URL/api/v1/movies/docs"
+                echo "$URL/api/v1/casts/docs"
               '''
             }
           }
@@ -113,7 +116,10 @@ pipeline {
                 mkdir .kube
                 cat $KUBECONFIG > .kube/config
                 helm upgrade --install app charts --namespace staging --set service.nodePort=$PORT --set image.tag="${DOCKER_TAG}"
-                echo "Staging env available at http://0.0.0.0:$PORT"
+                URL="http://$(curl -s ifconfig.me):$PORT"
+                echo "Staging env available at $URL, see"
+                echo "$URL/api/v1/movies/docs"
+                echo "$URL/api/v1/casts/docs"
               '''
             }
           }
@@ -130,7 +136,10 @@ pipeline {
                 mkdir .kube
                 cat $KUBECONFIG > .kube/config
                 helm upgrade --install app charts --namespace qa --set service.nodePort=$PORT --set image.tag="${DOCKER_TAG}"
-                echo "QA env available at http://0.0.0.0:$PORT"
+                URL="http://$(curl -s ifconfig.me):$PORT"
+                echo "QA env available at $URL, see"
+                echo "$URL/api/v1/movies/docs"
+                echo "$URL/api/v1/casts/docs"
               '''
             }
           }
@@ -153,8 +162,11 @@ pipeline {
             rm -Rf .kube
             mkdir .kube
             cat $KUBECONFIG > .kube/config
-                helm upgrade --install app charts --namespace prod --set service.nodePort=$PORT --set image.tag="${DOCKER_TAG}""
-            echo "Prod env available at http://0.0.0.0:$PORT"
+                helm upgrade --install app charts --namespace prod --set service.nodePort=$PORT --set image.tag="${DOCKER_TAG}"
+            URL="http://$(curl -s ifconfig.me):$PORT"
+            echo "Prod env available at $URL, see"
+            echo "$URL/api/v1/movies/docs"
+            echo "$URL/api/v1/casts/docs"
           '''
         }
       }
